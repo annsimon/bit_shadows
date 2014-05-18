@@ -6,6 +6,11 @@
 
 #include <QMessageBox>
 
+// opencv
+#include <iostream>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -17,6 +22,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->pushButtonImage->setEnabled(false);
+    ui->pushButtonMethod1->setEnabled(false);
+    ui->pushButtonMethod2->setEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -24,11 +31,24 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+
+bool MainWindow::updateCombobox(){
+
+    ui->comboBoxImage->clear();
+
+    for (int i = 0; i < m_frameList.size(); ++i){
+        QString tmp = m_frameList.at(i).split("/").last();
+        ui->comboBoxImage->addItem(tmp, QVariant(m_frameList.at(i)));
+    }
+    return true;
+}
+
 void MainWindow::extractImages()
 {
     bool failed(false);
     // let the user choose a video
     QString file = QFileDialog::getOpenFileName(this, QString::fromUtf8("Video wählen"), QDir::home().dirName());
+
     // create a directory for the frames
     QFileInfo info(file);
     QString name = info.fileName().split(".")[0];
@@ -36,22 +56,53 @@ void MainWindow::extractImages()
     failed = !(m_originalDir.mkpath(name));
     m_originalDir.setPath(m_originalDir.path()+"/"+name);
     QString path = m_originalDir.path();
+
+    // call in Utilities.cpp for method
     // extract the frames
-    // todo: save each frame as picture into m_originalDir and add the filename (e.g. img_1) to the combobox
+    m_frameList = extractFrames(file, path);
+
+    if(!m_frameList.size() > 2){
+         std::cout << "Fehler beim Speichern der Frames." << std::endl;
+    }
+
+    // update combobox with image names
+    if(!this->updateCombobox()){
+        std::cout << "Fehler beim Aktuelisieren der Combobox." << std::endl;
+    }
+
 
     // display error if not successful
     if(failed)
         QMessageBox::critical(this, "Fehler", "Das Video konnte nicht geladen werden.");
     else
+    {
         ui->pushButtonImage->setEnabled(true);
+        ui->pushButtonMethod1->setEnabled(true);
+        ui->pushButtonMethod2->setEnabled(true);
+    }
 }
+
+// combobox value is path to frame
+bool MainWindow::loadOriginalImage(){
+    //   ui.comboBoxSheetSize->itemData(index).toInt();
+
+    int index = ui->comboBoxImage->currentIndex();
+    QString path = ui->comboBoxImage->itemData(index).toString();
+
+    QImage originalImage;
+    originalImage.load(path);
+
+    ui->labelOriginal->setPixmap(QPixmap::fromImage(originalImage));
+    return true;
+}
+
 
 void MainWindow::displayImage()
 {
     // load original image into pixmap and display
-    // todo: load into pixmap and use setPixmap() instead of setText()
-    //ui->labelOriginal->setPixmap();
-    ui->labelOriginal->setText(QString::fromUtf8("Hier wäre das Originalbild"));
+    if(!loadOriginalImage()){
+        ui->labelOriginal->setText(QString::fromUtf8("Hier wäre das Originalbild"));
+    }
 
     // load segmentation image made with method 1 into pixmap and display
     if(method1Done)
