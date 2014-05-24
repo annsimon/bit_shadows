@@ -3,7 +3,6 @@
 
 #include <QMainWindow>
 #include <QDir>
-#include "Utilities.h"
 
 namespace Ui {
 class MainWindow;

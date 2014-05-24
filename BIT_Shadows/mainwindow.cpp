@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include "Utilities.h"
+
 #include <QFileDialog>
 #include <QFileInfo>
 
@@ -48,6 +50,8 @@ void MainWindow::extractImages()
     bool failed(false);
     // let the user choose a video
     QString file = QFileDialog::getOpenFileName(this, QString::fromUtf8("Video wählen"), QDir::home().dirName());
+    if(!file)
+        return;
 
     // create a directory for the frames
     QFileInfo info(file);
@@ -61,13 +65,15 @@ void MainWindow::extractImages()
     // extract the frames
     m_frameList = extractFrames(file, path);
 
-    if(!m_frameList.size() > 2){
+    if(m_frameList.count() < 2){
          std::cout << "Fehler beim Speichern der Frames." << std::endl;
+         failed = true;
     }
 
     // update combobox with image names
     if(!this->updateCombobox()){
-        std::cout << "Fehler beim Aktuelisieren der Combobox." << std::endl;
+        std::cout << "Fehler beim Aktualisieren der Combobox." << std::endl;
+        failed = true;
     }
 
 
