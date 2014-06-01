@@ -30,7 +30,12 @@ private slots:
     bool updateCombobox();
     //! loads the original image to the center widget
     bool loadOriginalImage();
+    //! loads the result of method 1 to the center widget
+    bool loadMethod1Image();
 
+private:
+    //! Runs the sakbot-inspired method
+    void executeSakbot();
 
 private:
     Ui::MainWindow *ui;

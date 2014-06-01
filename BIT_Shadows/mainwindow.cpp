@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include "Utilities.h"
+#include "sakbot.h"
 
 #include <QFileDialog>
 #include <QFileInfo>
@@ -50,7 +51,7 @@ void MainWindow::extractImages()
     bool failed(false);
     // let the user choose a video
     QString file = QFileDialog::getOpenFileName(this, QString::fromUtf8("Video wählen"), QDir::home().dirName());
-    if(!file)
+    if(file == NULL)
         return;
 
     // create a directory for the frames
@@ -102,6 +103,21 @@ bool MainWindow::loadOriginalImage(){
     return true;
 }
 
+bool MainWindow::loadMethod1Image()
+{
+    int index = ui->comboBoxImage->currentIndex();
+    QString path = ui->comboBoxImage->itemData(index).toString();
+
+    QStringList components = path.split('/');
+    components.insert(components.length()-1,"Method1");
+    path = components.join("/");
+
+    QImage originalImage;
+    originalImage.load(path);
+
+    ui->labelMethod1->setPixmap(QPixmap::fromImage(originalImage));
+    return true;
+}
 
 void MainWindow::displayImage()
 {
@@ -113,9 +129,9 @@ void MainWindow::displayImage()
     // load segmentation image made with method 1 into pixmap and display
     if(method1Done)
     {
-        // todo: load into pixmap and use setPixmap() instead of setText()
-        //ui->labelMethod1->setPixmap();
-        ui->labelMethod1->setText(QString::fromUtf8("Hier wäre Segmentierung 1"));
+        // load into pixmap and use setPixmap() instead of setText()
+        if(!loadMethod1Image())
+            ui->labelMethod1->setText(QString::fromUtf8("Hier wäre Segmentierung 1"));
     }
     else
         ui->labelMethod1->setText("Keine Segmentierung vorhanden");
@@ -133,18 +149,32 @@ void MainWindow::displayImage()
 
 void MainWindow::executeMethod1()
 {
+    // disable gui
+    ui->pushButtonImage->setEnabled(false);
+    ui->pushButtonImage->repaint();
+    ui->pushButtonMethod1->setEnabled(false);
+    ui->pushButtonMethod1->repaint();
+    ui->pushButtonMethod2->setEnabled(false);
+    ui->pushButtonMethod2->repaint();
+
     bool failed(false);
     // create a new sub-directory
     failed = !(m_originalDir.mkpath("Method1"));
     m_method1Dir.setPath(m_originalDir.path()+"/Method1");
 
-    // todo: execute the algorithm and save every frame into the sub-directory
+    // execute the algorithm and save every frame into the sub-directory
+    Sakbot method1;
+    method1.run(&m_frameList);
 
     // display error if not successful
     if(failed)
         QMessageBox::critical(this, "Fehler", "Die Segmentierung konnte nicht durchgeführt werden.");
     else
         method1Done = true;
+
+    ui->pushButtonImage->setEnabled(true);
+    ui->pushButtonMethod1->setEnabled(true);
+    ui->pushButtonMethod2->setEnabled(true);
 }
 
 void MainWindow::executeMethod2()
