@@ -1,21 +1,16 @@
 #include "Utilities.h"
 
-#include <iostream>
-
-// opencv
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
 
 QStringList extractFrames(QString file, QString path){
     // extract the frames
     // save each frame as picture into m_originalDir and add the filename (e.g. img_1) to the combobox
     cv::Mat frame;
     cv::VideoCapture video(file.toStdString()); // open video file
+
     if(!video.isOpened()){ // check if we succeeded
         std::cout << "Video wurde nicht initialsiert!" << std::endl;
         return QStringList();
     }
-
 
     int frameCounter = 0;
     QString frameName = path + "/img_";
@@ -24,10 +19,14 @@ QStringList extractFrames(QString file, QString path){
     QStringList frameList;
 
     while(video.grab()){
-        frameCounter++;
-
-        framePath = frameName + QString::number(frameCounter) + frameType;
         video >> frame; //extract a frame
+
+        if(frame.empty()){
+            break;
+        }
+
+        frameCounter++;
+        framePath = frameName + QString::number(frameCounter) + frameType;
 
         // Save the frame into a file
         if(!imwrite(framePath.toStdString(), frame)){

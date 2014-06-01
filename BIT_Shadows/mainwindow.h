@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QDir>
+#include <QImage>
 
 namespace Ui {
 class MainWindow;

@@ -9,11 +9,6 @@
 
 #include <QMessageBox>
 
-// opencv
-#include <iostream>
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -51,6 +46,7 @@ void MainWindow::extractImages()
     bool failed(false);
     // let the user choose a video
     QString file = QFileDialog::getOpenFileName(this, QString::fromUtf8("Video wählen"), QDir::home().dirName());
+
     if(file == NULL)
         return;
 
@@ -91,8 +87,6 @@ void MainWindow::extractImages()
 
 // combobox value is path to frame
 bool MainWindow::loadOriginalImage(){
-    //   ui.comboBoxSheetSize->itemData(index).toInt();
-
     int index = ui->comboBoxImage->currentIndex();
     QString path = ui->comboBoxImage->itemData(index).toString();
 
@@ -141,12 +135,24 @@ void MainWindow::displayImage()
     {
         // todo: load into pixmap and use setPixmap() instead of setText()
         //ui->labelMethod1->setPixmap();
-        ui->labelMethod2->setText(QString::fromUtf8("Hier wäre Segmentierung 2"));
+        QString index = ui->comboBoxImage->currentText();
+        QString path = m_method2Dir.path().append("/").append(index);
+
+        QImage m2Image;
+
+        if(m2Image.load(path))
+        {
+        ui->labelMethod2->setPixmap(QPixmap::fromImage(m2Image));
+        }else
+        {
+            ui->labelMethod2->setText("Keine Segmentierung vorhanden: Pfad fehlerhaft");
+        }
     }
     else
         ui->labelMethod2->setText("Keine Segmentierung vorhanden");
 }
 
+// Annes Methode
 void MainWindow::executeMethod1()
 {
     // disable gui
@@ -177,6 +183,7 @@ void MainWindow::executeMethod1()
     ui->pushButtonMethod2->setEnabled(true);
 }
 
+// von Simone
 void MainWindow::executeMethod2()
 {
     bool failed(false);
@@ -185,6 +192,30 @@ void MainWindow::executeMethod2()
     m_method2Dir.setPath(m_originalDir.path()+"/Method2");
 
     // todo: execute the algorithm and save every frame into the sub-directory
+    QStringList Filter;
+    Filter << "*.bmp";//.append("*.bmp");
+    QStringList flist = m_originalDir.entryList(Filter);//,0,0);
+
+    cv::Mat image;
+    cv::Mat gray;
+    QString imagePath;
+
+    for(int i=0; i<flist.size(); i++)
+    {
+       QString pathToOriginal = m_originalDir.path() + "/";
+
+       pathToOriginal = pathToOriginal.append(flist.at(i));
+       image = cv::imread(pathToOriginal.toStdString(), CV_LOAD_IMAGE_COLOR);
+
+       imagePath = m_method2Dir.path().append("/").append(flist.at(i));
+
+       // do something...
+      cv::cvtColor(image,gray,CV_RGB2GRAY, 3);
+
+       if(!cv::imwrite(imagePath.toStdString(), gray)){
+            failed = true;
+       }
+   }
 
     // display error if not successful
     if(failed)

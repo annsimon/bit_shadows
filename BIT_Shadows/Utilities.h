@@ -3,6 +3,11 @@
 
 #include <QString>
 #include <QStringList>
+#include <iostream>
+
+// opencv
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
 
 QStringList extractFrames(QString file, QString path);
 
