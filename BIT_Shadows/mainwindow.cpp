@@ -3,6 +3,7 @@
 
 #include "Utilities.h"
 #include "sakbot.h"
+#include "sebg.h"
 
 #include <QFileDialog>
 #include <QFileInfo>
@@ -192,30 +193,8 @@ void MainWindow::executeMethod2()
     m_method2Dir.setPath(m_originalDir.path()+"/Method2");
 
     // todo: execute the algorithm and save every frame into the sub-directory
-    QStringList Filter;
-    Filter << "*.bmp";//.append("*.bmp");
-    QStringList flist = m_originalDir.entryList(Filter);//,0,0);
-
-    cv::Mat image;
-    cv::Mat gray;
-    QString imagePath;
-
-    for(int i=0; i<flist.size(); i++)
-    {
-       QString pathToOriginal = m_originalDir.path() + "/";
-
-       pathToOriginal = pathToOriginal.append(flist.at(i));
-       image = cv::imread(pathToOriginal.toStdString(), CV_LOAD_IMAGE_COLOR);
-
-       imagePath = m_method2Dir.path().append("/").append(flist.at(i));
-
-       // do something...
-      cv::cvtColor(image,gray,CV_RGB2GRAY, 3);
-
-       if(!cv::imwrite(imagePath.toStdString(), gray)){
-            failed = true;
-       }
-   }
+    Sebg method2;
+    method2.run(&m_frameList);
 
     // display error if not successful
     if(failed)
