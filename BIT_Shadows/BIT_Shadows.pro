@@ -13,11 +13,13 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     Utilities.cpp \
-    sakbot.cpp
+    sakbot.cpp \
+    sebg.cpp
 
 HEADERS  += mainwindow.h \
     Utilities.h \
-    sakbot.h
+    sakbot.h \
+    sebg.h
 
 FORMS    += mainwindow.ui
 
