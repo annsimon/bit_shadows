@@ -74,7 +74,6 @@ void MainWindow::extractImages()
         failed = true;
     }
 
-
     // display error if not successful
     if(failed)
         QMessageBox::critical(this, "Fehler", "Das Video konnte nicht geladen werden.");
@@ -125,19 +124,21 @@ bool MainWindow::loadMethod1Image()
 
 bool MainWindow::loadMethod2Image(){
     // load into pixmap
-    QString index = ui->comboBoxImage->currentText();
-    QString path = m_method2Dir.path().append("/").append(index);
+    int index = ui->comboBoxImage->currentIndex();
+    QString path = ui->comboBoxImage->itemData(index).toString();
+
+    QStringList components = path.split('/');
+    components.insert(components.length()-1,"Method2");
+    path = components.join("/");
 
     QImage m2Image;
+    m2Image.load(path);
 
-    if(m2Image.load(path))
-    {
-        int w = ui->labelMethod2->width();
-        int h = ui->labelMethod2->height();
-        QPixmap pic = QPixmap::fromImage(m2Image);
+    int w = ui->labelMethod2->width();
+    int h = ui->labelMethod2->height();
+    QPixmap pic = QPixmap::fromImage(m2Image);
+    ui->labelMethod2->setPixmap(pic.scaled(w,h,Qt::KeepAspectRatio));
 
-        ui->labelMethod2->setPixmap(pic.scaled(w,h,Qt::KeepAspectRatio));
-    }
     return true;
 }
 
