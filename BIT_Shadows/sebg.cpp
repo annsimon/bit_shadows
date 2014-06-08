@@ -22,7 +22,7 @@ void Sebg::run(QStringList* originals)
         if(m_currentFrame.empty())
             continue;
 
-        if( i == 93){
+        if( i == 130){
             show = true;
         }
 
@@ -55,6 +55,8 @@ void Sebg::findSegmentation()
     int threshold = 50;
     cv::threshold(m_currentForeground, m_workingFg, threshold, 255, CV_THRESH_BINARY );
 
+     //   m_currentForeground.copyTo(m_workingFg);
+
     // get rid of the shadows
     removeShadows();
 }
@@ -79,26 +81,27 @@ void Sebg::removeShadows()
 
     cv::Mat kernel;
     int kernel_size = 2;
-    int kernel_type = cv::MORPH_RECT;
+    int kernel_type = cv::MORPH_ELLIPSE;
     cv::Size kSize(2*kernel_size+1, 2*kernel_size+1);
     kernel = getStructuringElement( kernel_type, kSize);
 
     cv::Mat morphBin;
     // get rid of small fragments
     cv::dilate(m_currentBinImage,morphBin, kernel, cv::Point(-1,-1),2);
-    cv::erode(morphBin,morphBin, kernel, cv::Point(-1,-1),2);
+    cv::erode(morphBin,morphBin, kernel, cv::Point(-1,-1),3);
+
+    cv::absdiff(m_workingFg, morphBin, m_currentShadow);
+    cv::erode(m_currentShadow,m_currentShadow, kernel, cv::Point(-1,-1));
+
+
     morphBin.copyTo(m_currentMorphImage);
-
-    cv::cvtColor(m_currentGradFg, destCvt, CV_BGR2GRAY);
-    cv::absdiff(morphBin, destCvt, m_currentShadow);
-
      if(show){
          show = false;
-/*         showPics(m_currentForeground, "m_currentForeground");
+         showPics(m_currentForeground, "m_currentForeground");
          showPics(m_currentBackground, "m_currentBackground");
          showPics(m_relevantFg, "m_relevantFg");
          showPics(m_relevantBg, "m_relevantBg");
-*/         showPics(m_currentGradFg, "m_currentGradFg");
+         showPics(m_currentGradFg, "m_currentGradFg");
          showPics(m_currentGradBg, "m_currentGradBg");
 
          showPics(m_currentDiffImage, "m_currentDiffImage");
@@ -164,9 +167,6 @@ void Sebg::createGradient(cv::Mat src, int modus){
     }
 }
 
-
-
-
 void Sebg::saveResult(QString path)
 {
     // get the path
@@ -177,12 +177,13 @@ void Sebg::saveResult(QString path)
     std::vector<std::vector<cv::Point> > contours;
 
     // draw the shadow's contours
-//    cv::findContours(m_currentShadow,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
-//    cv::drawContours(m_workingFrame,contours,-1,cv::Scalar(0,255,0),1);
+    cv::findContours(m_currentShadow,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
+    cv::drawContours(m_workingFrame,contours,-1,cv::Scalar(0,255,0),1);
 
     // draw the segmentation's contours
     cv::findContours(m_currentMorphImage,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
     cv::drawContours(m_workingFrame,contours,-1,cv::Scalar(0,0,255),1);
+
 
     // save the image
     cv::imwrite(path.toStdString(), m_workingFrame);
