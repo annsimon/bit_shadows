@@ -21,11 +21,11 @@ void Sebg::run(QStringList* originals)
         m_currentFrame = cv::imread(originals->at(i).toStdString());
         if(m_currentFrame.empty())
             continue;
-
+/*
         if( i == 130){
             show = true;
         }
-
+*/
         createWorkingFrame();
         findSegmentation();
         saveResult(originals->at(i));
@@ -95,7 +95,8 @@ void Sebg::removeShadows()
 
 
     morphBin.copyTo(m_currentMorphImage);
-     if(show){
+   /*
+    if(show){
          show = false;
          showPics(m_currentForeground, "m_currentForeground");
          showPics(m_currentBackground, "m_currentBackground");
@@ -110,6 +111,7 @@ void Sebg::removeShadows()
          showPics(m_workingFg, "m_workingFg");
          showPics(m_currentMorphImage, "m_currentMorphImage");
      }
+     */
 }
 
 // merge the objects, which are relevant and moving in the scene
