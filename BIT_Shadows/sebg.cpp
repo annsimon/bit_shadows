@@ -22,14 +22,13 @@ void Sebg::run(QStringList* originals)
         if(m_currentFrame.empty())
             continue;
 
-        if( i == 120){
+        if( i == 93){
             show = true;
         }
-            createWorkingFrame();
-            findSegmentation();
-            saveResult(originals->at(i));
 
-
+        createWorkingFrame();
+        findSegmentation();
+        saveResult(originals->at(i));
     }
 }
 
@@ -39,16 +38,22 @@ void Sebg::findSegmentation()
     m_bgSubtractor(m_workingFrame,m_currentForeground);
     m_bgSubtractor.getBackgroundImage(m_currentBackground);
 
-    // close hole
- /*   cv::dilate(m_currentForeground,m_currentForeground,cv::Mat(),cv::Point(-1,-1),2);
-    cv::erode(m_currentForeground,m_currentForeground,cv::Mat(),cv::Point(-1,-1),2);
+    cv::Mat kernel;
+    int kernel_size = 1;
+    int kernel_type = cv::MORPH_ELLIPSE;
+    cv::Size kSize(2*kernel_size+1, 2*kernel_size+1);
+    kernel = getStructuringElement( kernel_type, kSize);
 
-    // get rid of small fragments
-    cv::erode(m_currentForeground,m_currentForeground,cv::Mat(),cv::Point(-1,-1),5);
-    cv::dilate(m_currentForeground,m_currentForeground,cv::Mat(),cv::Point(-1,-1),4);
-*/
+    // close hole / closing
+    cv::dilate(m_currentForeground,m_currentForeground, kernel, cv::Point(-1,-1));
+    cv::erode(m_currentForeground,m_currentForeground, kernel, cv::Point(-1,-1),2);
 
-    m_currentForeground.copyTo(m_workingFg);
+    // get rid of small fragments  / opening
+    cv::erode(m_currentForeground,m_currentForeground, kernel, cv::Point(-1,-1),2);
+    cv::dilate(m_currentForeground,m_currentForeground, kernel, cv::Point(-1,-1));
+
+    int threshold = 50;
+    cv::threshold(m_currentForeground, m_workingFg, threshold, 255, CV_THRESH_BINARY );
 
     // get rid of the shadows
     removeShadows();
@@ -59,55 +64,53 @@ void Sebg::removeShadows()
     m_relevantBg = mergeMatrix(m_currentBackground);
     m_relevantFg = mergeMatrix(m_workingFrame);
 
-        createGradient(m_relevantBg, 1);
-        createGradient(m_relevantFg, 2);
-        cv::absdiff(m_currentGradFg, m_currentGradBg, m_currentDiffImage);
+    createGradient(m_relevantBg, 1);
+    createGradient(m_relevantFg, 2);
 
-        cv::Mat tmp;
-     int threshold = 10;
-     cv::cvtColor(m_currentDiffImage, tmp, CV_BGR2GRAY);
-     cv::threshold(tmp, m_currentBinImage, threshold, 255, CV_THRESH_BINARY );
+    int threshold = 50;
+    cv::threshold(m_currentGradFg, m_currentGradFg, threshold, 255, CV_THRESH_BINARY );
+    cv::threshold(m_currentGradBg, m_currentGradBg, threshold, 255, CV_THRESH_BINARY );
 
-        cv::Mat kernel;
-        int kernel_size = 2;
-        int kernel_type = cv::MORPH_ELLIPSE;
-        cv::Size kSize(2*kernel_size+1, 2*kernel_size+1);
-        kernel = getStructuringElement( kernel_type, kSize);
+    cv::absdiff(m_currentGradFg, m_currentGradBg, m_currentDiffImage);
 
+    cv::Mat destCvt;
+    cv::cvtColor(m_currentDiffImage, destCvt, CV_BGR2GRAY);
+    cv::threshold(destCvt, m_currentBinImage, threshold, 255, CV_THRESH_BINARY );
 
-        cv::Mat canny;
-        cv::Mat canny2;
+    cv::Mat kernel;
+    int kernel_size = 2;
+    int kernel_type = cv::MORPH_RECT;
+    cv::Size kSize(2*kernel_size+1, 2*kernel_size+1);
+    kernel = getStructuringElement( kernel_type, kSize);
 
-       // get rid of small fragments
-        cv::erode(m_currentBinImage,canny, kernel, cv::Point(-1,-1));
-       cv::dilate(canny,canny2, kernel, cv::Point(-1,-1));
+    cv::Mat morphBin;
+    // get rid of small fragments
+    cv::dilate(m_currentBinImage,morphBin, kernel, cv::Point(-1,-1),2);
+    cv::erode(morphBin,morphBin, kernel, cv::Point(-1,-1),2);
+    morphBin.copyTo(m_currentMorphImage);
 
-
-       cv::threshold(m_workingFg, tmp, 130, 255, CV_THRESH_BINARY );
-
-       cv::absdiff(canny2, tmp, m_currentShadow);
-       cv::erode(m_currentShadow,m_currentShadow, kernel, cv::Point(-1,-1));
-
-     canny2.copyTo(m_currentMorphImage);
+    cv::cvtColor(m_currentGradFg, destCvt, CV_BGR2GRAY);
+    cv::absdiff(morphBin, destCvt, m_currentShadow);
 
      if(show){
-            show = false;
-   /*      showPics(m_currentForeground, "m_currentForeground");
+         show = false;
+/*         showPics(m_currentForeground, "m_currentForeground");
          showPics(m_currentBackground, "m_currentBackground");
          showPics(m_relevantFg, "m_relevantFg");
-        showPics(m_relevantBg, "m_relevantBg");*/
-        showPics(m_currentGradFg, "m_currentGradFg");
-        showPics(m_currentGradBg, "m_currentGradBg");        
-        showPics(m_currentDiffImage, "m_currentDiffImage");
-          showPics(m_currentShadow, "m_currentShadow");
-        /*
+         showPics(m_relevantBg, "m_relevantBg");
+*/         showPics(m_currentGradFg, "m_currentGradFg");
+         showPics(m_currentGradBg, "m_currentGradBg");
+
+         showPics(m_currentDiffImage, "m_currentDiffImage");
+         showPics(m_currentShadow, "m_currentShadow");
          showPics(m_currentBinImage, "m_currentBinImage");
-                  showPics(m_workingFg, "m_workingFg");
-         showPics(m_currentMorphImage, "m_currentMorphImage");*/
-
+         showPics(m_workingFg, "m_workingFg");
+         showPics(m_currentMorphImage, "m_currentMorphImage");
+     }
 }
-}
 
+// merge the objects, which are relevant and moving in the scene
+// foreground and the background
 cv::Mat Sebg::mergeMatrix(cv::Mat cFrame){
     cv::Mat tmp;
     cv::cvtColor(m_workingFg, tmp, CV_GRAY2BGR);
@@ -130,6 +133,8 @@ cv::Mat Sebg::mergeMatrix(cv::Mat cFrame){
     return tmp;
 }
 
+// gradient images for foreground and background
+// just in the relevant background
 void Sebg::createGradient(cv::Mat src, int modus){
 
     int scale = 1;
@@ -138,8 +143,10 @@ void Sebg::createGradient(cv::Mat src, int modus){
 
     /// Generate grad_x and grad_y
 
-    cv::Mat grad_x, grad_y;
-    cv::Mat abs_grad_x, abs_grad_y;
+    cv::Mat grad_x;
+    cv::Mat grad_y;
+    cv::Mat abs_grad_x;
+    cv::Mat abs_grad_y;
 
     /// Gradient X
     cv::Sobel( src, grad_x, ddepth, 1, 0, 3, scale, delta, cv::BORDER_DEFAULT );
@@ -154,7 +161,7 @@ void Sebg::createGradient(cv::Mat src, int modus){
          cv::addWeighted( abs_grad_x, 0.5, abs_grad_y, 0.5, 0, m_currentGradBg );
      }else if (modus ==2){ // FG
          cv::addWeighted( abs_grad_x, 0.5, abs_grad_y, 0.5, 0, m_currentGradFg );
-     }
+    }
 }
 
 
@@ -167,14 +174,15 @@ void Sebg::saveResult(QString path)
     components.insert(components.length()-1,"Method2");
     path = components.join("/");
 
-    // draw the segmentation's contours
     std::vector<std::vector<cv::Point> > contours;
+
+    // draw the shadow's contours
+//    cv::findContours(m_currentShadow,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
+//    cv::drawContours(m_workingFrame,contours,-1,cv::Scalar(0,255,0),1);
+
+    // draw the segmentation's contours
     cv::findContours(m_currentMorphImage,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
     cv::drawContours(m_workingFrame,contours,-1,cv::Scalar(0,0,255),1);
-
-    // TODO: draw the shadow's contours
-    cv::findContours(m_currentShadow,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
-    cv::drawContours(m_workingFrame,contours,-1,cv::Scalar(0,255,0),1);
 
     // save the image
     cv::imwrite(path.toStdString(), m_workingFrame);
@@ -202,15 +210,11 @@ void Sebg::createWorkingFrame(cv::Mat src, cv::Mat dest)
     cv::mixChannels(m_workingFrame,m_workingFrame,mixVec);
 }
 
+
 void Sebg::findInitialBackground(QStringList* originals)
 {
     cv::Mat curr;
     cv::Mat fg;
-
-
-    m_bgSubtractor.set("nmixtures", 3);
-  //  m_bgSubtractor.set("bShadowDetection", false);
-
 
     int frames = (originals->length() < 30)? originals->length() : 30;
     // let the background subtractor learn for a few runs
@@ -222,7 +226,7 @@ void Sebg::findInitialBackground(QStringList* originals)
             if(curr.empty())
             continue;
 
-        createWorkingFrame(curr, curr);
-        m_bgSubtractor(curr,fg, false);
+            createWorkingFrame(curr, curr);
+            m_bgSubtractor(curr,fg, false);
         }
 }
