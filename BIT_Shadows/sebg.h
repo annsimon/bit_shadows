@@ -43,8 +43,7 @@ private:
 
     cv::Mat m_relevantBg;
     cv::Mat m_relevantFg;
-    cv::Mat* m_FgPrt;
-    cv::Mat* m_BgPrt;
+    cv::Mat m_workingFg;
 
     cv::Mat m_currentGradBg;
     cv::Mat m_currentGradFg;
@@ -52,6 +51,7 @@ private:
     cv::Mat m_currentBinImage; // just for debbuging
     cv::Mat m_currentMorphImage; // just for debbuging
 
+    bool show;
     cv::BackgroundSubtractorMOG2 m_bgSubtractor;
 };
 
