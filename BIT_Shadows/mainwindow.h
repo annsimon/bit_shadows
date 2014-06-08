@@ -33,6 +33,8 @@ private slots:
     bool loadOriginalImage();
     //! loads the result of method 1 to the center widget
     bool loadMethod1Image();
+    //! loads the result of method 2 to the center widget
+    bool loadMethod2Image();
 
 private:
     //! Runs the sakbot-inspired method

@@ -123,6 +123,24 @@ bool MainWindow::loadMethod1Image()
     return true;
 }
 
+bool MainWindow::loadMethod2Image(){
+    // load into pixmap
+    QString index = ui->comboBoxImage->currentText();
+    QString path = m_method2Dir.path().append("/").append(index);
+
+    QImage m2Image;
+
+    if(m2Image.load(path))
+    {
+        int w = ui->labelMethod2->width();
+        int h = ui->labelMethod2->height();
+        QPixmap pic = QPixmap::fromImage(m2Image);
+
+        ui->labelMethod2->setPixmap(pic.scaled(w,h,Qt::KeepAspectRatio));
+    }
+    return true;
+}
+
 void MainWindow::displayImage()
 {
     // load original image into pixmap and display
@@ -136,34 +154,15 @@ void MainWindow::displayImage()
         // load into pixmap and use setPixmap() instead of setText()
         if(!loadMethod1Image())
             ui->labelMethod1->setText(QString::fromUtf8("Hier wäre Segmentierung 1"));
-    }
-    else
+    } else
         ui->labelMethod1->setText("Keine Segmentierung vorhanden");
 
     // load segmentation image made with method 2 into pixmap and display
     if(method2Done)
     {
-        // todo: load into pixmap and use setPixmap() instead of setText()
-        //ui->labelMethod1->setPixmap();
-        QString index = ui->comboBoxImage->currentText();
-        QString path = m_method2Dir.path().append("/").append(index);
-
-        QImage m2Image;
-
-        if(m2Image.load(path))
-        {
-            int w = ui->labelMethod2->width();
-            int h = ui->labelMethod2->height();
-            QPixmap pic = QPixmap::fromImage(m2Image);
-
-            ui->labelOriginal->setPixmap(pic.scaled(w,h,Qt::KeepAspectRatio));
-        }
-        else
-        {
-            ui->labelMethod2->setText("Keine Segmentierung vorhanden: Pfad fehlerhaft");
-        }
-    }
-    else
+        if(!loadMethod2Image())
+            ui->labelMethod2->setText(QString::fromUtf8("Hier wäre Segmentierung 2"));
+    } else
         ui->labelMethod2->setText("Keine Segmentierung vorhanden");
 }
 
