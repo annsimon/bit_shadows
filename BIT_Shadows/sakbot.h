@@ -2,36 +2,30 @@
 #define SAKBOT_H
 
 #include <QStringList>
-#include <opencv2/video/background_segm.hpp>
+
+#include "parameterdialog.h"
+#include "SakbotUtils.h"
 
 class Sakbot
 {
 public:
     Sakbot();
-    void run(QStringList *originals);
+    bool run(QStringList *originals);
 
 private:
-    //! Segments the moving objects
-    void findSegmentation();
-    //! Initializes the background with (if possible) 30 frames
-    void findInitialBackground(QStringList *originals);
-    //! Creates a grayscale image from the HSV V-channel
-    void createWorkingFrame(cv::Mat src = cv::Mat(), cv::Mat dest = cv::Mat());
-    //! Removes shadows from the initial segmentation
-    void removeShadows();
+    //! Use user input and sample segmentations to determine parameters that are appropriate for the scene
+    bool findShadowParams();
 
     //! Saves the original image with the contour of the segmented moving objects
     void saveResult(QString path);
 
 private:
-    QStringList m_originals;
-    QStringList m_segmentations;
-    cv::Mat m_currentFrame;
-    cv::Mat m_workingFrame;
-    cv::Mat m_currentBackground;
-    cv::Mat m_currentForeground;
-    cv::Mat m_currentShadow;
-    cv::BackgroundSubtractorMOG2 m_bgSubtractor;
+    QStringList *m_originals;
+
+    SakbotUtils m_sakbot;
+
+    // settings
+    parameterDialog m_paramDialog;
 };
 
 #endif // SAKBOT_H

@@ -94,7 +94,11 @@ bool MainWindow::loadOriginalImage(){
     QImage originalImage;
     originalImage.load(path);
 
-    ui->labelOriginal->setPixmap(QPixmap::fromImage(originalImage));
+    int w = ui->labelOriginal->width();
+    int h = ui->labelOriginal->height();
+    QPixmap pic = QPixmap::fromImage(originalImage);
+
+    ui->labelOriginal->setPixmap(pic.scaled(w,h,Qt::KeepAspectRatio));
     return true;
 }
 
@@ -110,7 +114,12 @@ bool MainWindow::loadMethod1Image()
     QImage originalImage;
     originalImage.load(path);
 
-    ui->labelMethod1->setPixmap(QPixmap::fromImage(originalImage));
+    int w = ui->labelMethod1->width();
+    int h = ui->labelMethod1->height();
+    QPixmap pic = QPixmap::fromImage(originalImage);
+
+    ui->labelMethod1->setPixmap(pic.scaled(w,h,Qt::KeepAspectRatio));
+
     return true;
 }
 
@@ -143,8 +152,13 @@ void MainWindow::displayImage()
 
         if(m2Image.load(path))
         {
-        ui->labelMethod2->setPixmap(QPixmap::fromImage(m2Image));
-        }else
+            int w = ui->labelMethod2->width();
+            int h = ui->labelMethod2->height();
+            QPixmap pic = QPixmap::fromImage(m2Image);
+
+            ui->labelOriginal->setPixmap(pic.scaled(w,h,Qt::KeepAspectRatio));
+        }
+        else
         {
             ui->labelMethod2->setText("Keine Segmentierung vorhanden: Pfad fehlerhaft");
         }
@@ -171,11 +185,12 @@ void MainWindow::executeMethod1()
 
     // execute the algorithm and save every frame into the sub-directory
     Sakbot method1;
-    method1.run(&m_frameList);
+    if( !method1.run(&m_frameList) )
+        failed = true;
 
     // display error if not successful
     if(failed)
-        QMessageBox::critical(this, "Fehler", "Die Segmentierung konnte nicht durchgeführt werden.");
+        QMessageBox::critical(this, "Fehler", QString::fromUtf8("Die Segmentierung konnte nicht durchgeführt werden."));
     else
         method1Done = true;
 
