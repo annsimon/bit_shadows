@@ -22,13 +22,13 @@ public:
     void findSegmentation();
 
     //! Return the current shadow mask
-    void getShadowMask( cv::Mat shadow );
+    void getShadowMask( cv::Mat &shadow );
     //! Return the current segmentation
-    void getSegmentationMask( cv::Mat segmentation );
+    void getSegmentationMask( cv::Mat &segmentation );
     //! Return the current image
-    void getImage( cv::Mat image );
+    void getImage( cv::Mat &image );
     //! Return the current background
-    void getBackground( cv::Mat background );
+    void getBackground( cv::Mat &background );
 
 private:
     //! Creates a grayscale image from the HSV V-channel

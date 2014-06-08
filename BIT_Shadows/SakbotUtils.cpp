@@ -20,7 +20,7 @@ void SakbotUtils::findSegmentation()
 
     // colored background
     m_bgSubtractorColor(m_image,m_segmentation);
-    m_bgSubtractor.getBackgroundImage(m_background);
+    m_bgSubtractorColor.getBackgroundImage(m_background);
 
     // initial segmentation
     m_bgSubtractor(m_imageGrey,m_segmentation);
@@ -224,22 +224,22 @@ void SakbotUtils::setShadowParams(double a, double b, int sat, int hue, int erod
 
 // GETTERS #############################################################
 
-void SakbotUtils::getImage( cv::Mat image )
+void SakbotUtils::getImage( cv::Mat &image )
 {
     image = m_image.clone();
 }
 
-void SakbotUtils::getShadowMask( cv::Mat shadow )
+void SakbotUtils::getShadowMask( cv::Mat &shadow )
 {
     shadow = m_shadowSegmentation.clone();
 }
 
-void SakbotUtils::getSegmentationMask( cv::Mat segmentation )
+void SakbotUtils::getSegmentationMask( cv::Mat &segmentation )
 {
     segmentation = m_segmentation.clone();
 }
 
-void SakbotUtils::getBackground( cv::Mat background )
+void SakbotUtils::getBackground( cv::Mat &background )
 {
     background = m_background.clone();
 }

@@ -62,7 +62,6 @@ void parameterDialog::testParams()
 
     // display preview
     m_sakbot->getShadowMask(temp);
-    cv::cvtColor(temp, temp, CV_RGB2GRAY);
 
     preview = cv::Mat(image.clone());
 

@@ -28,6 +28,7 @@ bool Sakbot::run(QStringList* originals)
         currentFrame = cv::imread(originals->at(i).toStdString());
         if(currentFrame.empty())
             continue;
+        m_sakbot.setImage(currentFrame);
         m_sakbot.findSegmentation();
         saveResult(originals->at(i));
     }
@@ -48,8 +49,6 @@ void Sakbot::saveResult(QString path)
     m_sakbot.getImage( image );
     m_sakbot.getShadowMask( shadow );
     m_sakbot.getSegmentationMask( segmentation );
-
-    cv::cvtColor(shadow, shadow, CV_RGB2GRAY);
 
     // draw the shadow's contours
     std::vector<std::vector<cv::Point> > contours;
