@@ -132,7 +132,8 @@ bool MainWindow::loadMethod2Image(){
     path = components.join("/");
 
     QImage m2Image;
-    m2Image.load(path);
+    if(!m2Image.load(path))
+        return false;
 
     int w = ui->labelMethod2->width();
     int h = ui->labelMethod2->height();
@@ -202,6 +203,13 @@ void MainWindow::executeMethod1()
 // von Simone
 void MainWindow::executeMethod2()
 {
+    ui->pushButtonImage->setEnabled(false);
+    ui->pushButtonImage->repaint();
+    ui->pushButtonMethod1->setEnabled(false);
+    ui->pushButtonMethod1->repaint();
+    ui->pushButtonMethod2->setEnabled(false);
+    ui->pushButtonMethod2->repaint();
+
     bool failed(false);
     // create a new sub-directory
     failed = !(m_originalDir.mkpath("Method2"));
@@ -209,11 +217,17 @@ void MainWindow::executeMethod2()
 
     // todo: execute the algorithm and save every frame into the sub-directory
     Sebg method2;
-    method2.run(&m_frameList);
+    if( !method2.run(&m_frameList))
+        failed = true;
 
     // display error if not successful
     if(failed)
         QMessageBox::critical(this, "Fehler", "Die Segmentierung konnte nicht durchgeführt werden.");
     else
         method2Done = true;
+
+
+    ui->pushButtonImage->setEnabled(true);
+    ui->pushButtonMethod1->setEnabled(true);
+    ui->pushButtonMethod2->setEnabled(true);
 }
