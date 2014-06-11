@@ -74,7 +74,6 @@ void MainWindow::extractImages()
         failed = true;
     }
 
-
     // display error if not successful
     if(failed)
         QMessageBox::critical(this, "Fehler", "Das Video konnte nicht geladen werden.");
@@ -123,6 +122,27 @@ bool MainWindow::loadMethod1Image()
     return true;
 }
 
+bool MainWindow::loadMethod2Image(){
+    // load into pixmap
+    int index = ui->comboBoxImage->currentIndex();
+    QString path = ui->comboBoxImage->itemData(index).toString();
+
+    QStringList components = path.split('/');
+    components.insert(components.length()-1,"Method2");
+    path = components.join("/");
+
+    QImage m2Image;
+    if(!m2Image.load(path))
+        return false;
+
+    int w = ui->labelMethod2->width();
+    int h = ui->labelMethod2->height();
+    QPixmap pic = QPixmap::fromImage(m2Image);
+    ui->labelMethod2->setPixmap(pic.scaled(w,h,Qt::KeepAspectRatio));
+
+    return true;
+}
+
 void MainWindow::displayImage()
 {
     // load original image into pixmap and display
@@ -136,34 +156,15 @@ void MainWindow::displayImage()
         // load into pixmap and use setPixmap() instead of setText()
         if(!loadMethod1Image())
             ui->labelMethod1->setText(QString::fromUtf8("Hier wäre Segmentierung 1"));
-    }
-    else
+    } else
         ui->labelMethod1->setText("Keine Segmentierung vorhanden");
 
     // load segmentation image made with method 2 into pixmap and display
     if(method2Done)
     {
-        // todo: load into pixmap and use setPixmap() instead of setText()
-        //ui->labelMethod1->setPixmap();
-        QString index = ui->comboBoxImage->currentText();
-        QString path = m_method2Dir.path().append("/").append(index);
-
-        QImage m2Image;
-
-        if(m2Image.load(path))
-        {
-            int w = ui->labelMethod2->width();
-            int h = ui->labelMethod2->height();
-            QPixmap pic = QPixmap::fromImage(m2Image);
-
-            ui->labelOriginal->setPixmap(pic.scaled(w,h,Qt::KeepAspectRatio));
-        }
-        else
-        {
-            ui->labelMethod2->setText("Keine Segmentierung vorhanden: Pfad fehlerhaft");
-        }
-    }
-    else
+        if(!loadMethod2Image())
+            ui->labelMethod2->setText(QString::fromUtf8("Hier wäre Segmentierung 2"));
+    } else
         ui->labelMethod2->setText("Keine Segmentierung vorhanden");
 }
 
@@ -202,6 +203,13 @@ void MainWindow::executeMethod1()
 // von Simone
 void MainWindow::executeMethod2()
 {
+    ui->pushButtonImage->setEnabled(false);
+    ui->pushButtonImage->repaint();
+    ui->pushButtonMethod1->setEnabled(false);
+    ui->pushButtonMethod1->repaint();
+    ui->pushButtonMethod2->setEnabled(false);
+    ui->pushButtonMethod2->repaint();
+
     bool failed(false);
     // create a new sub-directory
     failed = !(m_originalDir.mkpath("Method2"));
@@ -209,11 +217,17 @@ void MainWindow::executeMethod2()
 
     // todo: execute the algorithm and save every frame into the sub-directory
     Sebg method2;
-    method2.run(&m_frameList);
+    if( !method2.run(&m_frameList))
+        failed = true;
 
     // display error if not successful
     if(failed)
         QMessageBox::critical(this, "Fehler", "Die Segmentierung konnte nicht durchgeführt werden.");
     else
         method2Done = true;
+
+
+    ui->pushButtonImage->setEnabled(true);
+    ui->pushButtonMethod1->setEnabled(true);
+    ui->pushButtonMethod2->setEnabled(true);
 }

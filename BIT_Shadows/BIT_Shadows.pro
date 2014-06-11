@@ -18,14 +18,16 @@ SOURCES += main.cpp\
     parameterdialog.cpp \
     sakbotwrapper.cpp \
     sakbot.cpp \
-    utilities.cpp
+    utilities.cpp \
+    SebgUtils.cpp
 
 HEADERS  += mainwindow.h \
     sebg.h \
     parameterdialog.h \
     sakbotwrapper.h \
     sakbot.h \
-    utilities.h
+    utilities.h \
+    SebgUtils.h
 
 FORMS    += mainwindow.ui \
     parameterdialog.ui
