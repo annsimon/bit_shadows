@@ -1,8 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include "Utilities.h"
-#include "sakbot.h"
+#include "utilities.h"
+#include "sakbotwrapper.h"
 #include "sebg.h"
 
 #include <QFileDialog>
@@ -184,7 +184,7 @@ void MainWindow::executeMethod1()
     m_method1Dir.setPath(m_originalDir.path()+"/Method1");
 
     // execute the algorithm and save every frame into the sub-directory
-    Sakbot method1;
+    SakbotWrapper method1;
     if( !method1.run(&m_frameList) )
         failed = true;
 

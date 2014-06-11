@@ -14,18 +14,18 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    Utilities.cpp \
-    sakbot.cpp \
     sebg.cpp \
     parameterdialog.cpp \
-    SakbotUtils.cpp
+    sakbotwrapper.cpp \
+    sakbot.cpp \
+    utilities.cpp
 
 HEADERS  += mainwindow.h \
-    Utilities.h \
-    sakbot.h \
     sebg.h \
     parameterdialog.h \
-    SakbotUtils.h
+    sakbotwrapper.h \
+    sakbot.h \
+    utilities.h
 
 FORMS    += mainwindow.ui \
     parameterdialog.ui
