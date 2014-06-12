@@ -16,19 +16,22 @@ void SebgUtils::findSegmentation()
     int kernel_size = 1;
     int kernel_type = cv::MORPH_ELLIPSE;
     cv::Size kSize(2*kernel_size+1, 2*kernel_size+1);
-    kernel = getStructuringElement( kernel_type, kSize);
+    kernel = cv::getStructuringElement( kernel_type, kSize);
+
+
+    erodeTimes = 2;
 
     // close hole / closing
     cv::dilate(m_currentForeground,m_currentForeground, kernel, cv::Point(-1,-1));
-    cv::erode(m_currentForeground,m_currentForeground, kernel, cv::Point(-1,-1),2);
+    cv::erode(m_currentForeground,m_currentForeground, kernel, cv::Point(-1,-1), erodeTimes);
 
     // get rid of small fragments  / opening
-    cv::erode(m_currentForeground,m_currentForeground, kernel, cv::Point(-1,-1),2);
+    cv::erode(m_currentForeground,m_currentForeground, kernel, cv::Point(-1,-1), erodeTimes);
     cv::dilate(m_currentForeground,m_currentForeground, kernel, cv::Point(-1,-1));
 
-    int threshold = 50;
-    cv::threshold(m_currentForeground, m_workingFg, threshold, 255, CV_THRESH_BINARY );
+    cv::threshold(m_currentForeground, m_workingFg, 10, 255, CV_THRESH_BINARY );
 
+    //m_currentForeground.copyTo(m_workingFg);
     // get rid of the shadows
     removeShadows();
 }
@@ -41,28 +44,36 @@ void SebgUtils::removeShadows()
     createGradient(m_relevantBg, MODUS_BG);
     createGradient(m_relevantFg, MODUS_FG);
 
-    int threshold = 50;
-    cv::threshold(m_currentGradFg, m_currentGradFg, threshold, 255, CV_THRESH_BINARY );
-    cv::threshold(m_currentGradBg, m_currentGradBg, threshold, 255, CV_THRESH_BINARY );
+    // m_threshold is from user input
+    cv::threshold(m_currentGradFg, m_currentGradFg, m_threshold, 255, CV_THRESH_BINARY );
+    cv::threshold(m_currentGradBg, m_currentGradBg, m_threshold, 255, CV_THRESH_BINARY );
     cv::absdiff(m_currentGradFg, m_currentGradBg, m_currentDiffImage);
 
-    cv::threshold(m_currentDiffImage, m_currentBinImage, threshold, 255, CV_THRESH_BINARY );
+    cv::threshold(m_currentDiffImage, m_currentBinImage, m_threshold, 255, CV_THRESH_BINARY );
+
+
+    morphImage();
+}
+
+void SebgUtils::morphImage()
+{
 
     cv::Mat kernel;
-    int kernel_size = 2;
-    int kernel_type = cv::MORPH_ELLIPSE;
-    cv::Size kSize(2*kernel_size+1, 2*kernel_size+1);
-    kernel = getStructuringElement( kernel_type, kSize);
+     int kernel_size = 2;
+     int kernel_type = cv::MORPH_ELLIPSE;
+     cv::Size kSize(2*kernel_size+1, 2*kernel_size+1);
+     kernel = getStructuringElement( kernel_type, kSize);
 
-    cv::Mat morphBin;
-    // get rid of small fragments
-    cv::dilate(m_currentBinImage,morphBin, kernel, cv::Point(-1,-1),2);
-    cv::erode(morphBin,morphBin, kernel, cv::Point(-1,-1),3);
+     cv::Mat morphBin;
+     // get rid of small fragments
+     cv::dilate(m_currentBinImage,morphBin, kernel, cv::Point(-1,-1),m_dilateObject); // 2
+     cv::erode(morphBin,morphBin, kernel, cv::Point(-1,-1), m_erodeObject); // 3
 
-    cv::absdiff(m_workingFg, morphBin, m_currentShadow);
-    cv::erode(m_currentShadow,m_currentShadow, kernel, cv::Point(-1,-1));
+     cv::absdiff(m_workingFg, morphBin, m_currentShadow);
+     cv::erode(m_currentShadow,m_currentShadow, kernel, cv::Point(-1,-1), m_erodeShadow);
+     cv::dilate(m_currentShadow,m_currentShadow, kernel, cv::Point(-1,-1), m_dilateShadow);
 
-    morphBin.copyTo(m_currentMorphImage);
+     morphBin.copyTo(m_currentMorphImage);
 }
 
 // merge the objects, which are relevant and moving in the scene
@@ -184,7 +195,7 @@ void SebgUtils::getShadowFrame(cv::Mat &shadowFrame)
 
 void SebgUtils::getFrame(cv::Mat &frame)
 {
-    frame = m_workingFrame.clone();
+    frame = m_currentFrame.clone();
 }
 
 void SebgUtils::getContourFrame(cv::Mat &contourFrame)
@@ -192,6 +203,10 @@ void SebgUtils::getContourFrame(cv::Mat &contourFrame)
     contourFrame = m_currentMorphImage.clone();
 }
 
+void SebgUtils::getBackground( cv::Mat &background )
+{
+    background = m_currentBackground.clone();
+}
 
 // DEBUG ################################################################
 void SebgUtils::showPics(cv::Mat pic, QString name)
@@ -214,4 +229,14 @@ void SebgUtils::showSpecificFrame()
      showPics(m_currentBinImage, "m_currentBinImage");
      showPics(m_workingFg, "m_workingFg");
      showPics(m_currentMorphImage, "m_currentMorphImage");
+  // showPics(m_floodFrame, "m_floodFrame");
+}
+
+void SebgUtils::setShadowParams(int dilateObject , int erodeObject, int dilateShadow ,
+                                int erodeShadow, int threshold ){
+    m_dilateObject = dilateObject;
+    m_erodeObject = erodeObject;
+    m_dilateShadow = dilateShadow;
+    m_erodeShadow = erodeShadow;
+    m_threshold = threshold;
 }
