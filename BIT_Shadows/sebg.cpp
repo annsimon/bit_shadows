@@ -29,10 +29,6 @@ bool Sebg::run(QStringList* originals)
         m_sebg.setFrame(currentFrame);
         m_sebg.findSegmentation();
         saveResult(originals->at(i));
-
-        if(i == 15){
-            m_sebg.showSpecificFrame();
-        }
     }
 
     return true;

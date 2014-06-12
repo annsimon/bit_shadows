@@ -1,36 +1,39 @@
 #ifndef PARAMETERDIALOG_H
 #define PARAMETERDIALOG_H
 
-#include "SakbotUtils.h"
+#include "sakbot.h"
 
 #include <QDialog>
 
 #include <opencv/cv.h>
 
-
 namespace Ui {
 class parameterDialog;
 }
 
-class parameterDialog : public QDialog
+//! This class is used to query the user for parameters appropriate for the current scene.
+class ParameterDialog : public QDialog
 {
     Q_OBJECT
     
 public:
-    explicit parameterDialog(QWidget *parent = 0);
-    ~parameterDialog();
+    explicit ParameterDialog(QWidget *parent = 0);
+    ~ParameterDialog();
 
+    //! Set the images the parameters can be tested on.
     void setImages( QStringList *list );
 
-    void setSakbot( SakbotUtils *sakbot );
+    //! Set the instance of the Sakbot class that will be used to create the segmentation.
+    void setSakbot( Sakbot *sakbot );
 
 private slots:
+    // Test the parameters and display a preview.
     void testParams();
     
 private:
     Ui::parameterDialog *ui;
 
-    SakbotUtils *m_sakbot;
+    Sakbot *m_sakbot;
 
     QStringList *m_originals;
 };

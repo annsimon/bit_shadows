@@ -2,7 +2,7 @@
 #define SEBGDIALOG_H
 
 #include <QDialog>
-#include "SebgUtils.h"
+#include "sebgutils.h"
 #include <opencv/cv.h>
 
 namespace Ui {

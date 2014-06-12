@@ -2,7 +2,7 @@
 #define SEGMETHOD2_H
 
 #include <QStringList>
-#include "SebgUtils.h"
+#include "sebgutils.h"
 #include "sebgdialog.h"
 
 //SEBG = Shadow Elimination Based on Gradients

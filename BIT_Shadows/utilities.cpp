@@ -1,4 +1,4 @@
-#include "Utilities.h"
+#include "utilities.h"
 
 
 QStringList extractFrames(QString file, QString path){

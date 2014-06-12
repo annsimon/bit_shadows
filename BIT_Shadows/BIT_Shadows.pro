@@ -14,22 +14,22 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    Utilities.cpp \
-    sakbot.cpp \
     sebg.cpp \
     parameterdialog.cpp \
-    SakbotUtils.cpp \
-    SebgUtils.cpp \
-    sebgdialog.cpp
+    sebgdialog.cpp\
+    sakbotwrapper.cpp \
+    sakbot.cpp \
+    utilities.cpp \
+    sebgutils.cpp
 
 HEADERS  += mainwindow.h \
-    Utilities.h \
-    sakbot.h \
     sebg.h \
     parameterdialog.h \
-    SakbotUtils.h \
-    SebgUtils.h \
-    sebgdialog.h
+    sebgdialog.h\
+    sakbotwrapper.h \
+    sakbot.h \
+    utilities.h \
+    sebgutils.h
 
 FORMS    += mainwindow.ui \
     parameterdialog.ui \

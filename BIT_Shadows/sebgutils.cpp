@@ -1,4 +1,4 @@
-#include "SebgUtils.h"
+#include "sebgutils.h"
 
 SebgUtils::SebgUtils()
 {
