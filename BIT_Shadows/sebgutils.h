@@ -35,6 +35,8 @@ public:
     //! Set the parameters to use for shadow segmentation
     void setShadowParams( int dilateObject , int erodeObject, int dilateShadow ,
                           int erodeShadow, int threshold);
+    //! Set the parameters for background subtractor
+    void setBackgroundParameter(int history, int quality);
 
 private:
     //! Creates a grayscale image
@@ -54,8 +56,6 @@ private:
 private:
     // background subtractor for background extraction
     cv::BackgroundSubtractorMOG2 m_bgSubtractor;
-    cv::BackgroundSubtractorMOG2 m_FgMOG2;
-
 
     const static int MODUS_BG = 1;
     const static int MODUS_FG = 2;
@@ -92,8 +92,8 @@ private:
     int m_dilateShadow;
     int m_erodeShadow;
     int m_threshold;
-
-cv::Mat testFg;
+    int m_history;
+    int m_quality;
 };
 
 #endif // SEBGUTILS_H

@@ -30,6 +30,9 @@ void SebgDialog::testUserParams()
         return;
 
     m_sebg->setFrame(image);
+    m_sebg->setBackgroundParameter(ui->spinBoxHistory->value(),
+                                   ui->spinBoxQuality->value());
+
     m_sebg->findInitialBackground(m_originals);
 
     m_sebg->setShadowParams(ui->spinBoxDilatationObject->value(),

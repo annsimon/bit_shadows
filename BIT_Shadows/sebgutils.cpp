@@ -1,6 +1,13 @@
 #include "sebgutils.h"
 
-SebgUtils::SebgUtils()
+SebgUtils::SebgUtils():
+    m_dilateObject(1),
+    m_erodeObject(1),
+    m_dilateShadow(1),
+    m_erodeShadow(1),
+    m_threshold(130),
+    m_history(0),
+    m_quality(0)
 {
 }
 
@@ -19,16 +26,13 @@ void SebgUtils::findSegmentation()
         kernel = cv::getStructuringElement( kernel_type, kSize);
 
         // close hole / closing
-        cv::dilate(m_currentForeground,m_currentForeground, kernel, cv::Point(-1,-1),2);
+        cv::dilate(m_currentForeground,m_currentForeground, kernel, cv::Point(-1,-1));
         cv::erode(m_currentForeground,m_currentForeground, kernel, cv::Point(-1,-1), 2);
 
         // get rid of small fragments / opening
         cv::erode(m_currentForeground,m_currentForeground, kernel, cv::Point(-1,-1), 2);
-        cv::dilate(m_currentForeground,m_currentForeground, kernel, cv::Point(-1,-1),2);
+        cv::dilate(m_currentForeground,m_currentForeground, kernel, cv::Point(-1,-1));
 
-        cv::threshold(m_currentForeground, m_workingFg, 10, 255, CV_THRESH_BINARY );
-
-        //m_currentForeground.copyTo(m_workingFg);
         // get rid of the shadows
         removeShadows();
 }
@@ -81,13 +85,13 @@ void SebgUtils::morphImage()
 cv::Mat SebgUtils::mergeMatrix(cv::Mat cFrame)
 {
     cv::Mat tmp;
-    m_workingFg.copyTo(tmp);
+    m_currentForeground.copyTo(tmp);
 
     for(int i = 0;i < tmp.rows;i++)
     {
          for(int j = 0;j < tmp.cols;j++)
          {
-            int   v = m_workingFg.data[m_workingFg.step[0]*i + tmp.step[1]* j + 0];
+            int   v = m_currentForeground.data[m_currentForeground.step[0]*i + tmp.step[1]* j + 0];
 
             if(v != 0 )
              {
@@ -163,6 +167,8 @@ void SebgUtils::findInitialBackground(QStringList* originals)
     cv::Mat curr;
     cv::Mat fg;
 
+    m_bgSubtractor = cv::BackgroundSubtractorMOG2(m_history, m_quality, false);
+
     int frames = (originals->length() < 30)? originals->length() : 30;
     // let the background subtractor learn for a few runs
     // to start with a decent background
@@ -175,7 +181,7 @@ void SebgUtils::findInitialBackground(QStringList* originals)
             continue;
 
             createWorkingFrame(curr, curr);
-            m_bgSubtractor(curr,fg, 0.1);
+            m_bgSubtractor(curr,fg);
         }
     }
 }
@@ -227,15 +233,20 @@ void SebgUtils::showSpecificFrame()
      showPics(m_currentDiffImage, "m_currentDiffImage");
      showPics(m_currentShadow, "m_currentShadow");
      showPics(m_currentBinImage, "m_currentBinImage");
-     showPics(m_workingFg, "m_workingFg");
+ //    showPics(m_workingFg, "m_workingFg");
      showPics(m_currentMorphImage, "m_currentMorphImage");
 }
 
-void SebgUtils::setShadowParams(int dilateObject , int erodeObject, int dilateShadow ,
-                                int erodeShadow, int threshold ){
+void SebgUtils::setShadowParams(int dilateObject, int erodeObject, int dilateShadow ,
+                                int erodeShadow, int threshold){
     m_dilateObject = dilateObject;
     m_erodeObject = erodeObject;
     m_dilateShadow = dilateShadow;
     m_erodeShadow = erodeShadow;
     m_threshold = threshold;
+}
+
+void SebgUtils::setBackgroundParameter(int history, int quality){
+    m_history = history;
+    m_quality = quality;
 }
