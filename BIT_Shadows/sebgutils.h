@@ -33,8 +33,7 @@ public:
     void showSpecificFrame();
 
     //! Set the parameters to use for shadow segmentation
-    void setShadowParams( int dilateObject , int erodeObject, int dilateShadow ,
-                          int erodeShadow, int threshold);
+    void setShadowParams( int dilateObject , int erodeObject, int threshold);
     //! Set the parameters for background subtractor
     void setBackgroundParameter(int history, int quality);
 

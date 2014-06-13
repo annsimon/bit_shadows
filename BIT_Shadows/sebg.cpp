@@ -30,6 +30,9 @@ bool Sebg::run(QStringList* originals)
         m_sebg.findSegmentation();
         saveResult(originals->at(i));
 
+        if(i == 74){
+            m_sebg.showSpecificFrame();
+        }
     }
 
     return true;
