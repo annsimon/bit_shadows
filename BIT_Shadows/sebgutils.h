@@ -54,6 +54,8 @@ private:
 private:
     // background subtractor for background extraction
     cv::BackgroundSubtractorMOG2 m_bgSubtractor;
+    cv::BackgroundSubtractorMOG2 m_FgMOG2;
+
 
     const static int MODUS_BG = 1;
     const static int MODUS_FG = 2;
@@ -81,14 +83,8 @@ private:
 
     // used for morphing
     cv::Mat m_currentDiffImage;
-    cv::Mat m_currentBinImage; // just for debbuging
+    cv::Mat m_currentBinImage; // it's for debbuging
     cv::Mat m_currentMorphImage; // just for debbuging
-
-    // test
-    cv::Mat m_floodFrame;
-
-    int dilateTimes;
-    int erodeTimes;
 
     // params
     int m_dilateObject;
@@ -96,8 +92,8 @@ private:
     int m_dilateShadow;
     int m_erodeShadow;
     int m_threshold;
-    int m_last;
 
+cv::Mat testFg;
 };
 
 #endif // SEBGUTILS_H
