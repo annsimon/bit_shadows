@@ -1,9 +1,11 @@
 #include "sebg.h"
 
 
-Sebg::Sebg():m_sebg()
+Sebg::Sebg():m_sebg(), m_sebgDialog()
 {
+    m_sebgDialog.setSebg(&m_sebg);
 }
+
 
 bool Sebg::run(QStringList* originals)
 {
@@ -11,6 +13,9 @@ bool Sebg::run(QStringList* originals)
 
     cv::Mat currentFrame = cv::imread(m_originals->at(0).toStdString());
     if(currentFrame.empty())
+        return false;
+
+    if( !findShadowParams() )
         return false;
 
     m_sebg.findInitialBackground(originals);
@@ -24,6 +29,10 @@ bool Sebg::run(QStringList* originals)
         m_sebg.setFrame(currentFrame);
         m_sebg.findSegmentation();
         saveResult(originals->at(i));
+
+        if(i == 5){
+            m_sebg.showSpecificFrame();
+        }
     }
 
     return true;
@@ -57,4 +66,13 @@ void Sebg::saveResult(QString path)
 
     // save the image
     cv::imwrite(path.toStdString(), frame);
+}
+
+bool Sebg::findShadowParams()
+{
+    m_sebgDialog.setImages( m_originals );
+    if( m_sebgDialog.exec() == QDialog::Accepted )
+        return true;
+
+    return false;
 }

@@ -26,9 +26,17 @@ public:
     void getFrame(cv::Mat &frame);
     //! Returns the contour frame of the object
     void getContourFrame(cv::Mat &contourFrame);
+    //! Return the current background
+    void getBackground( cv::Mat &background );
 
     //! Helpful for debbuging - all frames of the current scene
     void showSpecificFrame();
+
+    //! Set the parameters to use for shadow segmentation
+    void setShadowParams( int dilateObject , int erodeObject, int dilateShadow ,
+                          int erodeShadow, int threshold);
+    //! Set the parameters for background subtractor
+    void setBackgroundParameter(int history, int quality);
 
 private:
     //! Creates a grayscale image
@@ -38,6 +46,8 @@ private:
     //! Shows the image in a opencv window
     void showPics(cv::Mat pic, QString name);
 
+    //! use morphologic operators
+    void morphImage();
     //! Merges the foreground to the relevant outcut object
     cv::Mat mergeMatrix(cv::Mat cFrame);
     //! Creates gradient images of foreground and background
@@ -73,9 +83,17 @@ private:
 
     // used for morphing
     cv::Mat m_currentDiffImage;
-    cv::Mat m_currentBinImage; // just for debbuging
+    cv::Mat m_currentBinImage; // it's for debbuging
     cv::Mat m_currentMorphImage; // just for debbuging
 
+    // params
+    int m_dilateObject;
+    int m_erodeObject;
+    int m_dilateShadow;
+    int m_erodeShadow;
+    int m_threshold;
+    int m_history;
+    int m_quality;
 };
 
 #endif // SEBGUTILS_H

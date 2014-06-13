@@ -1,6 +1,13 @@
-#include "SebgUtils.h"
+#include "sebgutils.h"
 
-SebgUtils::SebgUtils()
+SebgUtils::SebgUtils():
+    m_dilateObject(1),
+    m_erodeObject(1),
+    m_dilateShadow(1),
+    m_erodeShadow(1),
+    m_threshold(130),
+    m_history(0),
+    m_quality(0)
 {
 }
 
@@ -8,29 +15,26 @@ void SebgUtils::findSegmentation()
 {
     createWorkingFrame();
 
-    // initial segmentation
-    m_bgSubtractor(m_workingFrame,m_currentForeground);
-    m_bgSubtractor.getBackgroundImage(m_currentBackground);
+        // initial segmentation
+        m_bgSubtractor(m_workingFrame,m_currentForeground);
+        m_bgSubtractor.getBackgroundImage(m_currentBackground);
 
-    cv::Mat kernel;
-    int kernel_size = 1;
-    int kernel_type = cv::MORPH_ELLIPSE;
-    cv::Size kSize(2*kernel_size+1, 2*kernel_size+1);
-    kernel = getStructuringElement( kernel_type, kSize);
+        cv::Mat kernel;
+        int kernel_size = 1;
+        int kernel_type = cv::MORPH_ELLIPSE;
+        cv::Size kSize(2*kernel_size+1, 2*kernel_size+1);
+        kernel = cv::getStructuringElement( kernel_type, kSize);
 
-    // close hole / closing
-    cv::dilate(m_currentForeground,m_currentForeground, kernel, cv::Point(-1,-1));
-    cv::erode(m_currentForeground,m_currentForeground, kernel, cv::Point(-1,-1),2);
+        // close hole / closing
+        cv::dilate(m_currentForeground,m_currentForeground, kernel, cv::Point(-1,-1));
+        cv::erode(m_currentForeground,m_currentForeground, kernel, cv::Point(-1,-1), 2);
 
-    // get rid of small fragments  / opening
-    cv::erode(m_currentForeground,m_currentForeground, kernel, cv::Point(-1,-1),2);
-    cv::dilate(m_currentForeground,m_currentForeground, kernel, cv::Point(-1,-1));
+        // get rid of small fragments / opening
+        cv::erode(m_currentForeground,m_currentForeground, kernel, cv::Point(-1,-1), 2);
+        cv::dilate(m_currentForeground,m_currentForeground, kernel, cv::Point(-1,-1));
 
-    int threshold = 50;
-    cv::threshold(m_currentForeground, m_workingFg, threshold, 255, CV_THRESH_BINARY );
-
-    // get rid of the shadows
-    removeShadows();
+        // get rid of the shadows
+        removeShadows();
 }
 
 void SebgUtils::removeShadows()
@@ -41,28 +45,39 @@ void SebgUtils::removeShadows()
     createGradient(m_relevantBg, MODUS_BG);
     createGradient(m_relevantFg, MODUS_FG);
 
-    int threshold = 50;
-    cv::threshold(m_currentGradFg, m_currentGradFg, threshold, 255, CV_THRESH_BINARY );
-    cv::threshold(m_currentGradBg, m_currentGradBg, threshold, 255, CV_THRESH_BINARY );
+    // m_threshold is from user input
+    cv::threshold(m_currentGradFg, m_currentGradFg, m_threshold, 255, CV_THRESH_BINARY );
+    cv::threshold(m_currentGradBg, m_currentGradBg, m_threshold, 255, CV_THRESH_BINARY );
     cv::absdiff(m_currentGradFg, m_currentGradBg, m_currentDiffImage);
 
-    cv::threshold(m_currentDiffImage, m_currentBinImage, threshold, 255, CV_THRESH_BINARY );
+    cv::threshold(m_currentDiffImage, m_currentBinImage, m_threshold, 255, CV_THRESH_BINARY );
+
+
+    morphImage();
+}
+
+void SebgUtils::morphImage()
+{
 
     cv::Mat kernel;
-    int kernel_size = 2;
-    int kernel_type = cv::MORPH_ELLIPSE;
-    cv::Size kSize(2*kernel_size+1, 2*kernel_size+1);
-    kernel = getStructuringElement( kernel_type, kSize);
+     int kernel_size = 2;
+     int kernel_type = cv::MORPH_ELLIPSE;
+     cv::Size kSize(2*kernel_size+1, 2*kernel_size+1);
+     kernel = getStructuringElement( kernel_type, kSize);
 
-    cv::Mat morphBin;
-    // get rid of small fragments
-    cv::dilate(m_currentBinImage,morphBin, kernel, cv::Point(-1,-1),2);
-    cv::erode(morphBin,morphBin, kernel, cv::Point(-1,-1),3);
+     cv::Mat morphBin;
+     // get rid of small fragments
+     cv::dilate(m_currentBinImage,morphBin, kernel, cv::Point(-1,-1),m_dilateObject); // 2
+     cv::erode(morphBin,morphBin, kernel, cv::Point(-1,-1), m_erodeObject); // 3
 
-    cv::absdiff(m_workingFg, morphBin, m_currentShadow);
-    cv::erode(m_currentShadow,m_currentShadow, kernel, cv::Point(-1,-1));
+   //  cv::absdiff(m_workingFg, morphBin, m_currentShadow);
+     m_currentForeground.copyTo(m_currentShadow);
+    cv::erode(m_currentShadow,m_currentShadow, kernel, cv::Point(-1,-1), m_erodeShadow);
+     cv::dilate(m_currentShadow,m_currentShadow, kernel, cv::Point(-1,-1), m_dilateShadow);
 
-    morphBin.copyTo(m_currentMorphImage);
+
+
+     morphBin.copyTo(m_currentMorphImage);
 }
 
 // merge the objects, which are relevant and moving in the scene
@@ -70,13 +85,13 @@ void SebgUtils::removeShadows()
 cv::Mat SebgUtils::mergeMatrix(cv::Mat cFrame)
 {
     cv::Mat tmp;
-    m_workingFg.copyTo(tmp);
+    m_currentForeground.copyTo(tmp);
 
     for(int i = 0;i < tmp.rows;i++)
     {
          for(int j = 0;j < tmp.cols;j++)
          {
-            int   v = m_workingFg.data[m_workingFg.step[0]*i + tmp.step[1]* j + 0];
+            int   v = m_currentForeground.data[m_currentForeground.step[0]*i + tmp.step[1]* j + 0];
 
             if(v != 0 )
              {
@@ -152,6 +167,8 @@ void SebgUtils::findInitialBackground(QStringList* originals)
     cv::Mat curr;
     cv::Mat fg;
 
+    m_bgSubtractor = cv::BackgroundSubtractorMOG2(m_history, m_quality, false);
+
     int frames = (originals->length() < 30)? originals->length() : 30;
     // let the background subtractor learn for a few runs
     // to start with a decent background
@@ -164,7 +181,7 @@ void SebgUtils::findInitialBackground(QStringList* originals)
             continue;
 
             createWorkingFrame(curr, curr);
-            m_bgSubtractor(curr,fg, false);
+            m_bgSubtractor(curr,fg);
         }
     }
 }
@@ -184,7 +201,7 @@ void SebgUtils::getShadowFrame(cv::Mat &shadowFrame)
 
 void SebgUtils::getFrame(cv::Mat &frame)
 {
-    frame = m_workingFrame.clone();
+    frame = m_currentFrame.clone();
 }
 
 void SebgUtils::getContourFrame(cv::Mat &contourFrame)
@@ -192,6 +209,10 @@ void SebgUtils::getContourFrame(cv::Mat &contourFrame)
     contourFrame = m_currentMorphImage.clone();
 }
 
+void SebgUtils::getBackground( cv::Mat &background )
+{
+    background = m_currentBackground.clone();
+}
 
 // DEBUG ################################################################
 void SebgUtils::showPics(cv::Mat pic, QString name)
@@ -212,6 +233,20 @@ void SebgUtils::showSpecificFrame()
      showPics(m_currentDiffImage, "m_currentDiffImage");
      showPics(m_currentShadow, "m_currentShadow");
      showPics(m_currentBinImage, "m_currentBinImage");
-     showPics(m_workingFg, "m_workingFg");
+ //    showPics(m_workingFg, "m_workingFg");
      showPics(m_currentMorphImage, "m_currentMorphImage");
+}
+
+void SebgUtils::setShadowParams(int dilateObject, int erodeObject, int dilateShadow ,
+                                int erodeShadow, int threshold){
+    m_dilateObject = dilateObject;
+    m_erodeObject = erodeObject;
+    m_dilateShadow = dilateShadow;
+    m_erodeShadow = erodeShadow;
+    m_threshold = threshold;
+}
+
+void SebgUtils::setBackgroundParameter(int history, int quality){
+    m_history = history;
+    m_quality = quality;
 }

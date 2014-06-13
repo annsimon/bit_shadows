@@ -16,21 +16,24 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     sebg.cpp \
     parameterdialog.cpp \
+    sebgdialog.cpp\
     sakbotwrapper.cpp \
     sakbot.cpp \
     utilities.cpp \
-    SebgUtils.cpp
+    sebgutils.cpp
 
 HEADERS  += mainwindow.h \
     sebg.h \
     parameterdialog.h \
+    sebgdialog.h\
     sakbotwrapper.h \
     sakbot.h \
     utilities.h \
-    SebgUtils.h
+    sebgutils.h
 
 FORMS    += mainwindow.ui \
-    parameterdialog.ui
+    parameterdialog.ui \
+    sebgdialog.ui
 
 INCLUDEPATH += /usr/local/include/opencv
 LIBS += -L/usr/local/lib
