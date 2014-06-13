@@ -1,11 +1,9 @@
 #include "sebgutils.h"
 
 SebgUtils::SebgUtils():
-    m_dilateObject(1),
-    m_erodeObject(1),
-    m_dilateShadow(1),
-    m_erodeShadow(1),
-    m_threshold(130),
+    m_dilateObject(2),
+    m_erodeObject(2),
+    m_threshold(50),
     m_history(0),
     m_quality(0)
 {
@@ -66,16 +64,14 @@ void SebgUtils::morphImage()
      kernel = getStructuringElement( kernel_type, kSize);
 
      cv::Mat morphBin;
-     // get rid of small fragments
+     // close hole / closing
      cv::dilate(m_currentBinImage,morphBin, kernel, cv::Point(-1,-1),m_dilateObject); // 2
      cv::erode(morphBin,morphBin, kernel, cv::Point(-1,-1), m_erodeObject); // 3
 
    //  cv::absdiff(m_workingFg, morphBin, m_currentShadow);
      m_currentForeground.copyTo(m_currentShadow);
-    cv::erode(m_currentShadow,m_currentShadow, kernel, cv::Point(-1,-1), m_erodeShadow);
-     cv::dilate(m_currentShadow,m_currentShadow, kernel, cv::Point(-1,-1), m_dilateShadow);
-
-
+    cv::erode(m_currentShadow,m_currentShadow, kernel, cv::Point(-1,-1));
+    cv::dilate(m_currentShadow,m_currentShadow, kernel, cv::Point(-1,-1));
 
      morphBin.copyTo(m_currentMorphImage);
 }
@@ -237,12 +233,9 @@ void SebgUtils::showSpecificFrame()
      showPics(m_currentMorphImage, "m_currentMorphImage");
 }
 
-void SebgUtils::setShadowParams(int dilateObject, int erodeObject, int dilateShadow ,
-                                int erodeShadow, int threshold){
+void SebgUtils::setShadowParams(int dilateObject, int erodeObject, int threshold){
     m_dilateObject = dilateObject;
-    m_erodeObject = erodeObject;
-    m_dilateShadow = dilateShadow;
-    m_erodeShadow = erodeShadow;
+    m_erodeObject = erodeObject;;
     m_threshold = threshold;
 }
 

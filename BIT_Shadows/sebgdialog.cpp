@@ -37,8 +37,6 @@ void SebgDialog::testUserParams()
 
     m_sebg->setShadowParams(ui->spinBoxDilatationObject->value(),
                             ui->spinBoxErosionObject->value(),
-                            ui->spinBoxDilatationShadow->value(),
-                            ui->spinBoxErosionShadow->value(),
                             ui->spinBoxThreshold->value());
     m_sebg->findSegmentation();
 
