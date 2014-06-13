@@ -13,7 +13,7 @@ Sakbot::Sakbot():
     m_segmentationErode(2),
     m_segmentationDilate(2),
     m_backgroundDiff(0.05),
-    m_withDebug(true)
+    m_withDebug(false)
 {
 }
 
