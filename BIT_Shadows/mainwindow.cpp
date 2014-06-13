@@ -222,7 +222,7 @@ void MainWindow::executeMethod2()
 
     // display error if not successful
     if(failed)
-        QMessageBox::critical(this, "Fehler", "Die Segmentierung konnte nicht durchgeführt werden.");
+        QMessageBox::critical(this, "Fehler", QString::fromUtf8("Die Segmentierung konnte nicht durchgeführt werden."));
     else
         method2Done = true;
 
