@@ -1,8 +1,8 @@
 #include "sebgutils.h"
 
 SebgUtils::SebgUtils():
-    m_dilateObject(1),
-    m_erodeObject(1),
+    m_dilateObject(2),
+    m_erodeObject(2),
     m_threshold(50),
     m_history(0),
     m_quality(0)
