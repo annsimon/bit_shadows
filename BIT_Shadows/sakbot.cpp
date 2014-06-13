@@ -12,8 +12,19 @@ Sakbot::Sakbot():
     m_shadowDilate(1),
     m_segmentationErode(2),
     m_segmentationDilate(2),
-    m_backgroundDiff(0.05)
+    m_backgroundDiff(0.05),
+    m_withDebug(true)
 {
+}
+
+// debug
+void Sakbot::showPics(cv::Mat pic, QString name, int x, int y)
+{
+    if( !m_withDebug )
+        return;
+    cv::namedWindow(name.toStdString());
+    cv::imshow(name.toStdString(), pic);
+    cv::moveWindow(name.toStdString(), x, y);
 }
 
 void Sakbot::findSegmentation()
@@ -29,6 +40,12 @@ void Sakbot::findSegmentation()
     m_bgSubtractor(m_imageGrey,m_segmentation);
     m_bgSubtractor.getBackgroundImage(m_backgroundGrey);
 
+    // close holes
+    cv::dilate(m_segmentation,m_segmentation,cv::Mat(),cv::Point(-1,-1),2);
+    cv::erode(m_segmentation,m_segmentation,cv::Mat(),cv::Point(-1,-1),2);
+
+    showPics(m_segmentation, "mask1", 20, 20);
+
     // create frames needed for shadow detection
     cv::cvtColor(m_image,m_imageHSV,CV_BGR2HSV);
     cv::cvtColor(m_background,m_backgroundHSV,CV_BGR2HSV);
@@ -40,6 +57,8 @@ void Sakbot::findSegmentation()
     cv::Mat temp;
     cv::bitwise_not(m_shadowSegmentation, temp);
     cv::bitwise_and(m_segmentation, temp, m_segmentation);
+
+    showPics(m_segmentation, "mask-shadow", 20, 400);
 
     // close holes
     cv::dilate(m_segmentation,m_segmentation,cv::Mat(),cv::Point(-1,-1),2);
@@ -65,8 +84,9 @@ void Sakbot::findShadows()
     // I = main image (HSV)
     // a = control parameter for lightsource strength (brighter the source => smaller a)
     // b = control parameter for noise sensitivity
+    // if the pixel is part of the segmentation continue
     // if a < V(I)/V(B) < b continue
-    // if S(I)-S(B) <= satThresh continue
+    // if |S(I)-S(B)| <= satThresh continue
     // if |H(I)-H(B)| <= hueThresh shadowpoint found
 
     int rows = m_imageHSV.rows;
@@ -78,6 +98,13 @@ void Sakbot::findShadows()
     for(int j=0; j<cols; j++)
     {
         // apply formula for each pixel
+        if( m_segmentation.at<uchar>(i,j) == 0 )
+        {
+            m_shadowSegmentation.at<cv::Vec3b>(i,j)[0] = 0;
+            m_shadowSegmentation.at<cv::Vec3b>(i,j)[1] = 0;
+            m_shadowSegmentation.at<cv::Vec3b>(i,j)[2] = 0;
+            continue;
+        }
         double v;
         int iV = m_imageHSV.at<cv::Vec3b>(i,j)[2];
         int bV = m_backgroundHSV.at<cv::Vec3b>(i,j)[2];
@@ -92,6 +119,7 @@ void Sakbot::findShadows()
             continue;
         }
         int s = m_imageHSV.at<cv::Vec3b>(i,j)[1]-m_backgroundHSV.at<cv::Vec3b>(i,j)[1];
+        s = (s < 0)? -s : s;
         if( s > m_satThresh )
         {
             m_shadowSegmentation.at<cv::Vec3b>(i,j)[0] = 0;
@@ -115,17 +143,19 @@ void Sakbot::findShadows()
         m_shadowSegmentation.at<cv::Vec3b>(i,j)[2] = 255;
     }
 
+    showPics(m_shadowSegmentation, "shadow1", 420, 20);
+
     cv::cvtColor(m_shadowSegmentation, m_shadowSegmentation, CV_RGB2GRAY);
 
     cv::dilate(m_shadowSegmentation,m_shadowSegmentation,cv::Mat(),cv::Point(-1,-1),m_shadowDilate);
     cv::erode(m_shadowSegmentation,m_shadowSegmentation,cv::Mat(),cv::Point(-1,-1),m_shadowErode);
 
-    m_shadowSegmentationFull = m_shadowSegmentation.clone();
+    showPics(m_shadowSegmentation, "shadowPost", 420, 400);
 
-    finalizeSegmentation(true);
+    m_shadowSegmentationFull = m_shadowSegmentation.clone();
 }
 
-void Sakbot::finalizeSegmentation(bool shadow)
+void Sakbot::finalizeSegmentation()
 {
     int rows = m_imageHSV.rows;
     int cols = m_imageHSV.cols;
@@ -173,10 +203,7 @@ void Sakbot::finalizeSegmentation(bool shadow)
 
     // combine
     cv::bitwise_not(tempMask, tempMask);
-    if( shadow )
-        cv::bitwise_and(m_shadowSegmentation, tempMask, m_shadowSegmentation);
-    else
-        cv::bitwise_and(m_segmentation, tempMask, m_segmentation);
+    cv::bitwise_and(m_segmentation, tempMask, m_segmentation);
 }
 
 // UTILS ##############################################################
@@ -245,6 +272,12 @@ void Sakbot::setSegmentationParams(int erode, int dilate, double backgroundDiff)
     m_backgroundDiff = backgroundDiff;
 }
 
+void Sakbot::setSubtractorParams(int history, int thresh)
+{
+    m_bgSubtractor = cv::BackgroundSubtractorMOG2(history,thresh,false);
+    m_bgSubtractorColor = cv::BackgroundSubtractorMOG2(history,thresh,false);
+}
+
 // GETTERS #############################################################
 
 void Sakbot::getImage( cv::Mat &image )
@@ -254,7 +287,7 @@ void Sakbot::getImage( cv::Mat &image )
 
 void Sakbot::getShadowMask( cv::Mat &shadow )
 {
-    shadow = m_shadowSegmentationFull.clone();
+    shadow = m_shadowSegmentation.clone();
 }
 
 void Sakbot::getSegmentationMask( cv::Mat &segmentation )

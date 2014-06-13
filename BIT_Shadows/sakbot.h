@@ -19,6 +19,9 @@ public:
     void setShadowParams( double a, double b, int sat, int hue, int erode, int dilate );
     //! Set the parameters to use for object segmentation
     void setSegmentationParams(int erode, int dilate, double backgroundDiff);
+    //! Set the parameters to use for the background subtraction
+    //! A value of 0 sets the default that will usually give decent results
+    void setSubtractorParams(int history, int thresh);
 
     //! Initialize the background estimation
     void initBackground( QStringList *files, bool simple = false );
@@ -40,7 +43,10 @@ private:
     //! Find the shadow segmentation
     void findShadows();
     //! Remove parts from the segmentation that barely differ from the background
-    void finalizeSegmentation(bool shadow = false);
+    void finalizeSegmentation();
+
+    //! Display an image if debugging is enabled
+    void showPics(cv::Mat pic, QString name, int x = 20, int y = 20);
 
 private:
     // background subtractor (background extraction and initial segmentation)
@@ -64,16 +70,21 @@ private:
     cv::Mat m_shadowSegmentation;
     cv::Mat m_shadowSegmentationFull;
 
-    // params
+    // params shadow
     double m_aParam;
     double m_bParam;
     double m_satThresh;
     double m_hueThresh;
     int m_shadowErode;
     int m_shadowDilate;
+
+    // params segmentation
     int m_segmentationErode;
     int m_segmentationDilate;
     double m_backgroundDiff;
+
+    // debug
+    bool m_withDebug;
 };
 
 #endif // SAKBOTUTILS_H

@@ -9,7 +9,7 @@ ParameterDialog::ParameterDialog(QWidget *parent) :
     ui(new Ui::parameterDialog)
 {
     ui->setupUi(this);
-    ui->labelOrig->hide();
+    //ui->labelOrig->hide();
 }
 
 ParameterDialog::~ParameterDialog()
@@ -29,17 +29,23 @@ void ParameterDialog::testParams()
     if( image.empty() )
         return;
 
-    m_sakbot->setImage(image);
-    m_sakbot->initBackground(m_originals, true);
+    // set the params
     m_sakbot->setShadowParams( ui->doubleSpinBoxA->value(),
                                ui->doubleSpinBoxB->value(),
                                ui->spinBoxSat->value(),
                                ui->spinBoxHue->value(),
                                ui->spinBoxErosion->value(),
                                ui->spinBoxDilatation->value() );
+
     m_sakbot->setSegmentationParams( ui->spinBoxErodeObj->value(),
                                      ui->spinBoxDilateObj->value(),
                                      ui->doubleSpinBoxBackground->value());
+    m_sakbot->setSubtractorParams( ui->spinBoxHistory->value(),
+                                   ui->spinBoxQuality->value() );
+
+    // create the preview
+    m_sakbot->setImage(image);
+    m_sakbot->initBackground(m_originals, true);
     m_sakbot->findSegmentation();
 
     // display original
@@ -47,6 +53,7 @@ void ParameterDialog::testParams()
     cv::Mat segmentation;
     cv::Mat img;
     cv::Mat preview;
+
     cv::cvtColor(image, img, CV_BGR2RGB);
 
     int w = ui->labelOrig->width();
