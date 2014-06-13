@@ -27,7 +27,7 @@ public:
     void setSakbot( Sakbot *sakbot );
 
 private slots:
-    // Test the parameters and display a preview.
+    //! Test the parameters and display a preview.
     void testParams();
     
 private:

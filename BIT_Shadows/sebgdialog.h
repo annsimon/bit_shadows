@@ -17,11 +17,14 @@ public:
     explicit SebgDialog(QWidget *parent = 0);
     ~SebgDialog();
 
+    //! Set the images the parameters can be tested on.
     void setImages( QStringList *list );
 
+    //! Set the instance of the SebgUtils class that will be used to create the segmentation.
     void setSebg( SebgUtils *sebg );
     
 private slots:
+    //! Test the parameters and display a preview.
     void testUserParams();
 
 private:

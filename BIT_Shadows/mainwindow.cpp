@@ -168,7 +168,7 @@ void MainWindow::displayImage()
         ui->labelMethod2->setText("Keine Segmentierung vorhanden");
 }
 
-// Annes Methode
+// inspired by sakbot method
 void MainWindow::executeMethod1()
 {
     // disable gui
@@ -200,7 +200,7 @@ void MainWindow::executeMethod1()
     ui->pushButtonMethod2->setEnabled(true);
 }
 
-// von Simone
+// inspired by SEBG method
 void MainWindow::executeMethod2()
 {
     ui->pushButtonImage->setEnabled(false);
@@ -215,7 +215,7 @@ void MainWindow::executeMethod2()
     failed = !(m_originalDir.mkpath("Method2"));
     m_method2Dir.setPath(m_originalDir.path()+"/Method2");
 
-    // todo: execute the algorithm and save every frame into the sub-directory
+    // execute the algorithm and save every frame into the sub-directory
     Sebg method2;
     if( !method2.run(&m_frameList))
         failed = true;

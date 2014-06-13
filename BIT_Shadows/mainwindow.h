@@ -37,10 +37,6 @@ private slots:
     bool loadMethod2Image();
 
 private:
-    //! Runs the sakbot-inspired method
-    void executeSakbot();
-
-private:
     Ui::MainWindow *ui;
 
     QDir m_originalDir;
