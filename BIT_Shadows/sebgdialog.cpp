@@ -10,6 +10,8 @@ SebgDialog::SebgDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->labelOrig->hide();
+
+    ui->buttonBox->setEnabled(false);
 }
 
 SebgDialog::~SebgDialog()
@@ -91,6 +93,7 @@ void SebgDialog::testUserParams()
 
         ui->labelTest->setPixmap(pic2.scaled(w,h,Qt::KeepAspectRatio));
 
+        ui->buttonBox->setEnabled(true);
 }
 
 // SETTERS ###################################

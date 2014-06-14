@@ -10,6 +10,7 @@ ParameterDialog::ParameterDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     //ui->labelOrig->hide();
+    ui->buttonBox->setEnabled(false);
 }
 
 ParameterDialog::~ParameterDialog()
@@ -99,6 +100,8 @@ void ParameterDialog::testParams()
                                              segmentation.step, QImage::Format_RGB888));
 
     ui->labelTest->setPixmap(pic2.scaled(w,h,Qt::KeepAspectRatio));
+
+    ui->buttonBox->setEnabled(true);
 }
 
 // SETTERS ###################################

@@ -73,6 +73,13 @@
         <number>0</number>
        </property>
        <item>
+        <widget class="QPushButton" name="pushButtonLoad">
+         <property name="text">
+          <string>Film öffnen</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="pushButtonMethod1">
          <property name="text">
           <string>Starte Verfahren 1</string>
@@ -244,6 +251,22 @@
     <hint type="destinationlabel">
      <x>383</x>
      <y>443</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButtonLoad</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>extractImages()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>461</x>
+     <y>48</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>272</x>
+     <y>233</y>
     </hint>
    </hints>
   </connection>
